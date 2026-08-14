@@ -1,1 +1,673 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><title>Corelotto</title></head><body>Initializing Corelotto...</body></html>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d6049">
+<meta name="description" content="แนวทางวิเคราะห์คำนวณหวยจากสถิติย้อนหลังและสูตรคำนวณ">
+<title>แนวทางวิเคราะห์คำนวณหวย (@b2steen)</title>
+<style>
+:root {
+color-scheme: light;
+--jade-950: #063f32;
+--jade-800: #0d6049;
+--jade-700: #13735a;
+--jade-100: #e1f3e8;
+--gold: #d5a62d;
+--gold-light: #f3db7b;
+--ink: #173a30;
+--muted: #587167;
+--danger: #9d3838;
+--danger-soft: rgba(255, 235, 230, 0.85);
+}
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+}
+html {
+min-height: 100%;
+background: var(--jade-950);
+}
+body {
+min-height: 100vh;
+min-height: 100dvh;
+padding:
+max(18px, env(safe-area-inset-top))
+14px
+max(28px, env(safe-area-inset-bottom));
+overflow-x: hidden;
+color: var(--ink);
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, sans-serif;
+-webkit-font-smoothing: antialiased;
+}
+body::before {
+position: fixed;
+inset: 0;
+z-index: -2;
+background:
+var(--jade-950)
+url("assets/cactus-cartoon.webp")
+center 42% / cover no-repeat;
+content: "";
+}
+body::after {
+position: fixed;
+inset: 0;
+z-index: -1;
+background:
+linear-gradient(180deg, rgba(5, 53, 40, 0.08), rgba(5, 53, 40, 0.20)),
+radial-gradient(circle at 50% 10%, rgba(255, 235, 143, 0.15), transparent 48%);
+content: "";
+pointer-events: none;
+}
+button,
+input,
+textarea {
+font: inherit;
+}
+button {
+-webkit-tap-highlight-color: transparent;
+}
+[hidden] {
+display: none !important;
+}
+.container {
+width: 100%;
+max-width: 480px;
+margin: 0 auto;
+overflow: hidden;
+border: 1px solid rgba(255, 238, 173, 0.74);
+border-radius: 24px;
+background: rgba(255, 253, 243, 0.18);
+box-shadow:
+0 24px 55px rgba(4, 42, 32, 0.34),
+inset 0 1px 0 rgba(255, 255, 255, 0.72),
+0 0 0 1px rgba(18, 111, 83, 0.12);
+backdrop-filter: blur(3px) saturate(1.08);
+-webkit-backdrop-filter: blur(3px) saturate(1.08);
+}
+.hero {
+position: relative;
+padding: 22px 18px 18px;
+overflow: hidden;
+color: #fffdf1;
+text-align: center;
+background:
+radial-gradient(circle at 16% 0%, rgba(247, 222, 118, 0.36), transparent 40%),
+linear-gradient(135deg, rgba(7, 81, 61, 0.76), rgba(17, 116, 87, 0.66));
+}
+.hero::after {
+position: absolute;
+right: -28px;
+bottom: -42px;
+width: 130px;
+height: 130px;
+border: 1px solid rgba(255, 238, 176, 0.21);
+border-radius: 50%;
+box-shadow: 0 0 0 18px rgba(255, 238, 176, 0.05);
+content: "";
+}
+.brand {
+position: relative;
+z-index: 1;
+display: inline-flex;
+align-items: center;
+min-height: 26px;
+margin-bottom: 8px;
+padding: 4px 10px;
+border: 1px solid rgba(255, 236, 164, 0.42);
+border-radius: 999px;
+color: #ffeaa4;
+background: rgba(4, 56, 42, 0.32);
+font-size: 12px;
+font-weight: 800;
+letter-spacing: 0.06em;
+}
+h1 {
+position: relative;
+z-index: 1;
+font-size: clamp(20px, 5.4vw, 25px);
+line-height: 1.35;
+text-shadow: 0 2px 12px rgba(2, 40, 29, 0.28);
+}
+.subtitle {
+position: relative;
+z-index: 1;
+margin-top: 5px;
+color: rgba(255, 253, 241, 0.84);
+font-size: 12px;
+line-height: 1.55;
+}
+.content {
+padding: 16px;
+background: linear-gradient(180deg, rgba(255, 253, 243, 0.28), rgba(255, 253, 243, 0.13));
+}
+.input-section,
+.result-card {
+border: 1px solid rgba(255, 255, 245, 0.62);
+background: rgba(255, 255, 250, 0.42);
+box-shadow:
+inset 0 1px 0 rgba(255, 255, 255, 0.72),
+0 9px 24px rgba(7, 62, 47, 0.09);
+backdrop-filter: blur(5px) saturate(1.05);
+-webkit-backdrop-filter: blur(5px) saturate(1.05);
+}
+.input-section {
+padding: 15px;
+border-radius: 17px;
+}
+.input-row {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 10px;
+margin-top: 12px;
+}
+.field {
+min-width: 0;
+}
+label {
+display: block;
+margin: 0 0 6px 2px;
+color: var(--jade-800);
+font-size: 12px;
+font-weight: 850;
+line-height: 1.45;
+text-shadow: 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+.field-hint {
+margin: 7px 2px 0;
+color: var(--muted);
+font-size: 10.5px;
+line-height: 1.5;
+}
+input,
+textarea {
+width: 100%;
+border: 1.5px solid rgba(18, 105, 80, 0.34);
+border-radius: 12px;
+outline: none;
+color: var(--ink);
+background: rgba(255, 255, 252, 0.78);
+box-shadow: inset 0 1px 2px rgba(5, 61, 45, 0.04);
+transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+input {
+min-height: 50px;
+padding: 10px 12px;
+font-size: 20px;
+font-weight: 850;
+text-align: center;
+letter-spacing: 0.1em;
+}
+textarea {
+min-height: 90px;
+padding: 11px 12px;
+resize: vertical;
+font-size: 16px;
+font-weight: 650;
+line-height: 1.55;
+}
+input:focus,
+textarea:focus {
+border-color: var(--gold);
+box-shadow: 0 0 0 4px rgba(214, 170, 48, 0.16);
+}
+input[aria-invalid="true"] {
+border-color: var(--danger);
+box-shadow: 0 0 0 4px rgba(157, 56, 56, 0.12);
+}
+.calc-btn,
+.copy-btn {
+width: 100%;
+border: 0;
+border-radius: 13px;
+cursor: pointer;
+font-size: 15px;
+font-weight: 900;
+transition: transform 150ms ease, filter 150ms ease, box-shadow 150ms ease;
+}
+.calc-btn {
+min-height: 51px;
+margin-top: 13px;
+color: #153e31;
+background: linear-gradient(135deg, #f6df84, #d3a32a 63%, #ba8617);
+box-shadow: 0 10px 22px rgba(159, 117, 18, 0.24), inset 0 1px 0 rgba(255, 248, 211, 0.8);
+}
+.copy-btn {
+min-height: 45px;
+margin-top: 2px;
+border: 1px solid rgba(13, 96, 73, 0.24);
+color: var(--jade-800);
+background: rgba(226, 244, 234, 0.90);
+box-shadow: 0 5px 13px rgba(7, 70, 52, 0.08);
+}
+.calc-btn:active,
+.copy-btn:active {
+transform: scale(0.985);
+}
+.calc-btn:hover,
+.copy-btn:hover {
+filter: brightness(1.035);
+}
+.form-error {
+margin-top: 9px;
+color: var(--danger);
+font-size: 12px;
+font-weight: 800;
+text-align: center;
+}
+.result-box {
+margin-top: 14px;
+animation: reveal 280ms ease-out both;
+}
+.double-alert {
+margin-bottom: 10px;
+padding: 11px 12px;
+border: 1px solid rgba(190, 61, 48, 0.46);
+border-radius: 14px;
+color: #762d27;
+background: var(--danger-soft);
+box-shadow: 0 8px 18px rgba(116, 37, 31, 0.10);
+font-size: 12.5px;
+font-weight: 900;
+line-height: 1.5;
+text-align: center;
+}
+.result-card {
+position: relative;
+margin-bottom: 10px;
+padding: 13px;
+overflow: hidden;
+border-radius: 15px;
+}
+.result-card::before {
+position: absolute;
+inset: 0 auto 0 0;
+width: 4px;
+background: linear-gradient(var(--gold-light), var(--jade-700));
+content: "";
+}
+.card-title {
+margin-bottom: 9px;
+padding-left: 2px;
+color: var(--jade-800);
+font-size: 13px;
+font-weight: 900;
+line-height: 1.45;
+}
+.status-pill {
+display: flex;
+align-items: center;
+justify-content: center;
+min-height: 38px;
+padding: 7px 10px;
+border: 1px solid rgba(210, 161, 35, 0.36);
+border-radius: 11px;
+color: #5e4b18;
+background: rgba(255, 247, 217, 0.82);
+font-size: 11.5px;
+font-weight: 800;
+line-height: 1.45;
+text-align: center;
+}
+.number-grid {
+display: grid;
+gap: 8px;
+}
+.grid-2 {
+grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.grid-3 {
+grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.number-badge {
+display: flex;
+align-items: center;
+justify-content: center;
+min-width: 0;
+min-height: 43px;
+padding: 7px 8px;
+border: 1px solid rgba(21, 117, 87, 0.38);
+border-radius: 11px;
+color: #fffdf0;
+background: linear-gradient(145deg, var(--jade-700), var(--jade-950));
+box-shadow: 0 6px 13px rgba(7, 70, 52, 0.15);
+font-size: 19px;
+font-weight: 900;
+letter-spacing: 0.08em;
+}
+.number-badge-3 {
+border-color: rgba(198, 146, 19, 0.50);
+color: var(--jade-950);
+background: linear-gradient(180deg, #fffdf1, #f1dda0);
+box-shadow: 0 5px 12px rgba(130, 98, 23, 0.10);
+}
+.number-badge-4 {
+border-color: rgba(22, 116, 85, 0.45);
+color: #174438;
+background: linear-gradient(180deg, rgba(226, 244, 234, 0.96), rgba(188, 225, 204, 0.96));
+}
+.note {
+margin: 12px 2px 1px;
+color: var(--muted);
+font-size: 10.5px;
+line-height: 1.55;
+text-align: center;
+}
+.toast {
+position: fixed;
+left: 50%;
+bottom: max(18px, env(safe-area-inset-bottom));
+z-index: 10;
+max-width: calc(100vw - 32px);
+padding: 10px 15px;
+border: 1px solid rgba(255, 235, 160, 0.32);
+border-radius: 999px;
+color: #fffdf2;
+background: rgba(5, 66, 49, 0.94);
+box-shadow: 0 12px 28px rgba(4, 43, 32, 0.28);
+font-size: 13px;
+font-weight: 800;
+text-align: center;
+transform: translate(-50%, 18px);
+opacity: 0;
+pointer-events: none;
+transition: opacity 180ms ease, transform 180ms ease;
+}
+.toast.show {
+transform: translate(-50%, 0);
+opacity: 1;
+}
+@keyframes reveal {
+from { opacity: 0; transform: translateY(7px); }
+to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 360px) {
+body { padding-left: 9px; padding-right: 9px; }
+.content { padding: 12px; }
+.input-section { padding: 12px; }
+label { font-size: 11px; }
+.number-badge { font-size: 17px; }
+}
+@media (min-width: 700px) {
+body {
+display: flex;
+align-items: center;
+justify-content: center;
+}
+}
+@media (prefers-reduced-motion: reduce) {
+*, *::before, *::after {
+scroll-behavior: auto !important;
+transition-duration: 0.01ms !important;
+animation-duration: 0.01ms !important;
+}
+}
+</style>
+</head>
+<body>
+<main class="container">
+<header class="hero">
+<div class="brand">🌵 @b2steen</div>
+<h1>แนวทางวิเคราะห์คำนวณหวย</h1>
+<p class="subtitle">สถิติย้อนหลัง • สูตรคำนวณ • ชุดเจาะ 2/3/4 ตัว</p>
+</header>
+<div class="content">
+<section class="input-section" aria-label="กรอกข้อมูลสำหรับวิเคราะห์">
+<div class="field">
+<label for="historyData">สถิติย้อนหลัง 2 หรือ 3 ตัว</label>
+<textarea
+id="historyData"
+autocomplete="off"
+spellcheck="false"
+placeholder="เช่น 12, 45, 89, 214, 71 ..."
+></textarea>
+<p class="field-hint">แนะนำ 15–16 งวด • คั่นด้วยจุลภาค เว้นวรรค หรือขึ้นบรรทัดใหม่</p>
+</div>
+<div class="input-row">
+<div class="field">
+<label for="top3">ผล 3 ตัวบนล่าสุด</label>
+<input
+type="text"
+id="top3"
+maxlength="3"
+inputmode="numeric"
+autocomplete="off"
+placeholder="214"
+aria-describedby="formError"
+>
+</div>
+<div class="field">
+<label for="bot2">ผล 2 ตัวล่างล่าสุด</label>
+<input
+type="text"
+id="bot2"
+maxlength="2"
+inputmode="numeric"
+autocomplete="off"
+placeholder="71"
+aria-describedby="formError"
+>
+</div>
+</div>
+<button class="calc-btn" type="button" id="calculateButton">✨ ประมวลผลแนวทาง</button>
+<p class="form-error" id="formError" role="alert" hidden></p>
+</section>
+<section class="result-box" id="resultContainer" aria-live="polite" hidden>
+<div class="double-alert" id="doubleAlert" role="status" hidden>
+⚠️ สัญญาณเตือน: รอบนี้มีโอกาสออก “เบิ้ล / หาม” สูง
+</div>
+<article class="result-card">
+<h2 class="card-title">📊 สถานะการวิเคราะห์</h2>
+<p class="status-pill" id="engineStatus"></p>
+</article>
+<article class="result-card">
+<h2 class="card-title">🎯 ชุดเจาะ 2 ตัว (4 ชุด)</h2>
+<div class="number-grid grid-2" id="set2digit"></div>
+</article>
+<article class="result-card">
+<h2 class="card-title">🎯 ชุดเจาะ 3 ตัว (4 ชุด)</h2>
+<div class="number-grid grid-2" id="set3digit"></div>
+</article>
+<article class="result-card">
+<h2 class="card-title">🎯 ชุดเจาะ 4 ตัว (3 ชุด)</h2>
+<div class="number-grid grid-3" id="set4digit"></div>
+</article>
+<button class="copy-btn" type="button" id="copyButton">📋 คัดลอกผลทั้งหมด</button>
+<p class="note">ใช้เพื่อประกอบการวิเคราะห์เท่านั้น สถิติย้อนหลังไม่สามารถรับประกันผลในอนาคตได้</p>
+</section>
+</div>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+const historyInput = document.getElementById('historyData');
+const topInput = document.getElementById('top3');
+const bottomInput = document.getElementById('bot2');
+const resultContainer = document.getElementById('resultContainer');
+const doubleAlert = document.getElementById('doubleAlert');
+const formError = document.getElementById('formError');
+const toast = document.getElementById('toast');
+let latestResult = null;
+let toastTimer = null;
+function keepDigitsOnly(event) {
+event.target.value = event.target.value.replace(/\D/g, '').slice(0, event.target.maxLength);
+event.target.removeAttribute('aria-invalid');
+formError.hidden = true;
+}
+topInput.addEventListener('input', keepDigitsOnly);
+bottomInput.addEventListener('input', keepDigitsOnly);
+document.getElementById('calculateButton').addEventListener('click', runMasterEngine);
+document.getElementById('copyButton').addEventListener('click', copyResults);
+document.addEventListener('keydown', (event) => {
+if (event.key === 'Enter' && event.target !== historyInput) {
+runMasterEngine();
+}
+});
+function showError(message) {
+formError.textContent = message;
+formError.hidden = false;
+const topValid = /^\d{3}$/.test(topInput.value);
+const bottomValid = /^\d{2}$/.test(bottomInput.value);
+topInput.setAttribute('aria-invalid', String(!topValid));
+bottomInput.setAttribute('aria-invalid', String(!bottomValid));
+(topValid ? bottomInput : topInput).focus();
+}
+function parseHistory(value) {
+return value
+.split(/[\s,;|/\\-]+/)
+.map((item) => item.trim())
+.filter((item) => /^\d{2,3}$/.test(item));
+}
+function renderNumbers(elementId, values, className) {
+const container = document.getElementById(elementId);
+container.replaceChildren(...values.map((value) => {
+const badge = document.createElement('div');
+badge.className = `number-badge ${className}`.trim();
+badge.textContent = value;
+return badge;
+}));
+}
+function runMasterEngine() {
+const top3 = topInput.value.trim();
+const bot2 = bottomInput.value.trim();
+if (!/^\d{3}$/.test(top3) || !/^\d{2}$/.test(bot2)) {
+showError('กรุณากรอกผล 3 ตัวบน และ 2 ตัวล่างให้ครบ');
+return;
+}
+formError.hidden = true;
+topInput.removeAttribute('aria-invalid');
+bottomInput.removeAttribute('aria-invalid');
+let historyList = parseHistory(historyInput.value);
+const usedFallbackHistory = historyList.length === 0;
+if (usedFallbackHistory) {
+historyList = [
+top3,
+bot2,
+'12',
+'34',
+'56',
+'78',
+'90',
+'24',
+'68',
+'13',
+'57',
+'92',
+'46',
+'80',
+'15'
+];
+}
+// ขั้นที่ 1: ค้นหาเลขเด่นจากความถี่ของสถิติย้อนหลัง
+const combinedHistoryStr = historyList.join('') + top3 + bot2;
+const freqMap = {};
+for (const char of combinedHistoryStr) {
+if (/^\d$/.test(char)) {
+freqMap[char] = (freqMap[char] || 0) + 1;
+}
+}
+const sortedStats = Object.keys(freqMap).sort((a, b) => freqMap[b] - freqMap[a]);
+const d1 = sortedStats[0] || '9';
+const d2 = sortedStats[1] || '8';
+const d3 = sortedStats[2] || '3';
+const d4 = sortedStats[3] || '1';
+// ขั้นที่ 2: สูตร 9%, 6%, 7% และ 99%
+const nTop = Number.parseInt(top3, 10);
+const nBot = Number.parseInt(bot2, 10);
+const calc9 = (nTop * 0.09).toFixed(2);
+const calc6 = ((nBot + 14) * 0.06).toFixed(2);
+const calc7 = (nTop * 0.07).toFixed(2);
+const calc99 = ((nBot + 14) * 0.99).toFixed(2);
+const checks = [calc9, calc6, calc7, calc99];
+let doubleHits = 0;
+for (const value of checks) {
+const digits = value.replace('.', '');
+if (/(.)\1/.test(digits)) {
+doubleHits += 1;
+}
+}
+const hasHighDoubleSignal = doubleHits >= 2;
+doubleAlert.hidden = !hasHighDoubleSignal;
+// ขั้นที่ 3: สังเคราะห์ชุดเจาะจากเลขเด่นและเลขท้ายของผลสูตร
+const f1 = calc9.slice(-1);
+const f2 = calc6.slice(-1);
+const f3 = calc7.slice(-1);
+const set2 = [
+`${d1}${f1}`,
+`${d2}${f2}`,
+`${d3}${f3}`,
+`${f1}${d4}`
+];
+const set3 = [
+`${f1}${d1}${d2}`,
+`${d2}${f2}${d3}`,
+`${f3}${d3}${d1}`,
+`${d1}${d3}${f2}`
+];
+const set4 = [
+`${d1}${f1}${d2}${f2}`,
+`${d3}${f3}${d1}${f1}`,
+`${f2}${d2}${f3}${d3}`
+];
+renderNumbers('set2digit', set2, '');
+renderNumbers('set3digit', set3, 'number-badge-3');
+renderNumbers('set4digit', set4, 'number-badge-4');
+const historyLabel = usedFallbackHistory ? 'ฐานสำรอง' : 'สถิติที่กรอก';
+const riskLabel = hasHighDoubleSignal ? 'สูง' : 'ปกติ';
+document.getElementById('engineStatus').textContent =
+`${historyLabel} ${historyList.length} งวด • สัญญาณเบิ้ล/หาม ${doubleHits}/4 (${riskLabel})`;
+latestResult = {
+top3,
+bot2,
+historyCount: historyList.length,
+usedFallbackHistory,
+doubleHits,
+hasHighDoubleSignal,
+set2,
+set3,
+set4
+};
+resultContainer.hidden = false;
+requestAnimationFrame(() => {
+const resultTop = resultContainer.getBoundingClientRect().top;
+if (resultTop > window.innerHeight * 0.72) {
+resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+});
+}
+async function copyResults() {
+if (!latestResult) return;
+const riskLabel = latestResult.hasHighDoubleSignal ? 'สูง' : 'ปกติ';
+const text = [
+'🌵 แนวทางวิเคราะห์คำนวณหวย',
+`${latestResult.top3}-${latestResult.bot2}`,
+'',
+`🔄 วิเคราะห์เบิ้ล/หาม: ${riskLabel} (${latestResult.doubleHits}/4)`,
+`🎯 เจาะ 2: ${latestResult.set2.join(' • ')}`,
+`🎯 เจาะ 3: ${latestResult.set3.join(' • ')}`,
+`🎯 เจาะ 4: ${latestResult.set4.join(' • ')}`
+].join('\n');
+try {
+await navigator.clipboard.writeText(text);
+} catch (error) {
+const helper = document.createElement('textarea');
+helper.value = text;
+helper.style.position = 'fixed';
+helper.style.opacity = '0';
+document.body.appendChild(helper);
+helper.select();
+document.execCommand('copy');
+helper.remove();
+}
+showToast('คัดลอกผลเรียบร้อยแล้ว');
+}
+function showToast(message) {
+clearTimeout(toastTimer);
+toast.textContent = message;
+toast.classList.add('show');
+toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+}
+</script>
+</body>
+</html>
