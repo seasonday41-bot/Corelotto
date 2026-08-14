@@ -1,0 +1,44 @@
+name: Rebuild Background Asset
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.bgparts/**'
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check all parts
+        id: parts
+        shell: bash
+        run: |
+          count=$(find .bgparts -maxdepth 1 -type f -name 'part-*' | wc -l | tr -d ' ')
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "Found $count of 11 parts"
+      - name: Rebuild WebP
+        if: steps.parts.outputs.count == '11'
+        shell: bash
+        run: |
+          cat .bgparts/part-* | base64 --decode > assets/cactus-cartoon.webp
+          test "$(wc -c < assets/cactus-cartoon.webp | tr -d ' ')" = "63714"
+      - name: Commit rebuilt asset
+        if: steps.parts.outputs.count == '11'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/cactus-cartoon.webp
+          if git diff --cached --quiet; then
+            echo "Asset already up to date"
+            exit 0
+          fi
+          git commit -m "Rebuild high-quality background asset"
+          git push origin HEAD:main
