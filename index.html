@@ -30,7 +30,7 @@
 <div class="double-alert" id="doubleAlert" hidden>⚠️ สัญญาณเตือน: รอบนี้มีโอกาสออก “เบิ้ล / หาม” สูง</div>
 <article class="result-card"><h2 class="card-title">📊 สถานะการวิเคราะห์</h2><p class="status-pill" id="engineStatus"></p></article>
 <article class="result-card"><h2 class="card-title">⚡ รูดหลัก / รูดรอง</h2><p class="status-pill" id="rudStatus"></p></article>
-<article class="result-card"><h2 class="card-title">🎯 ชุดเจาะ 2 ตัว (5 ชุด)</h2><div class="number-grid grid-2" id="set2digit"></div></article>
+<article class="result-card"><h2 class="card-title">🎯 ชุดเจาะ 2 ตัว (9 ชุด)</h2><div class="number-grid grid-2" id="set2digit"></div></article>
 <article class="result-card"><h2 class="card-title">🎯 ชุดเจาะ 3 ตัว (4 ชุด)</h2><div class="number-grid grid-2" id="set3digit"></div></article>
 <article class="result-card"><h2 class="card-title">🎯 ชุดเจาะ 4 ตัว (3 ชุด)</h2><div class="number-grid grid-3" id="set4digit"></div></article>
 <button class="copy-btn" type="button" id="copyButton">📋 คัดลอกผลทั้งหมด</button><p class="note">ใช้เพื่อประกอบการวิเคราะห์เท่านั้น สถิติย้อนหลังไม่สามารถรับประกันผลในอนาคตได้</p>
@@ -73,7 +73,7 @@ function calculateFromData(market,latest,history){
  const internalCandidates=[d1,d2,d3,d4,f1,f2,f3,...sorted,...top3.split(''),...bot2.split(''),...'0123456789'];
  const internalWin6=[...new Set(internalCandidates)].slice(0,6);
  const winRest=internalWin6.filter(d=>d!==d1&&d!==d2).slice(0,4);
- const set2=[`${d1}${d2}`,...winRest.map(d=>`${d1}${d}`)];
+ const set2=[`${d1}${d2}`,...winRest.map(d=>`${d1}${d}`),...winRest.map(d=>`${d2}${d}`)];
  const set3=winRest.map(d=>`${d1}${d2}${d}`);
  const set4=[`${d1}${f1}${d2}${f2}`,`${d3}${f3}${d1}${f1}`,`${f2}${d2}${f3}${d3}`];
  document.getElementById('rudStatus').textContent=`รูดหลัก ${d1} • รูดรอง ${d2}`;
